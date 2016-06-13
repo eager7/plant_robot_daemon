@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
     while(1)
     {
         printf("loop..\n");
-        sleep(1);
+        sleep(3);
     }
     return 0;
 }

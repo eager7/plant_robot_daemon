@@ -93,13 +93,12 @@ temSocketStatus eSocketFinished(tsSocketServer *psmSocket)
     return E_SOCKET_OK;
 }
 
-temSocketStatus eSocketSend(tsSocketServer *psmSocket, char *paSendMsg, uint16 u16Length)
+temSocketStatus eSocketSend(int iSocketFd, char *paSendMsg, uint16 u16Length)
 {
     DBG_vPrintf(DBG_SOCK, "mSocketSend\n");
-    CheckNull(psmSocket, E_SOCKET_SEND);
     CheckNull(paSendMsg, E_SOCKET_SEND);
     
-    if( -1 == send(psmSocket->iSocketFd, paSendMsg, u16Length, 0)){
+    if( -1 == send(iSocketFd, paSendMsg, u16Length, 0)){
         ERR_vPrintf(T_TRUE, "socket send error %s\n", strerror(errno));
         return E_SOCKET_SEND;
     }
@@ -133,7 +132,7 @@ temSocketStatus eSocketServerHandle(int *pEpollFd, int iEpollResult, struct epol
         if((pEpollEventList[n].events & EPOLLERR) || (pEpollEventList[n].events & EPOLLHUP))
         {
             ERR_vPrintf(T_TRUE,"The Fd Occured an Error, %s\n", strerror(errno));  
-            return E_SOCKET_ERROR;
+            continue;
         }
         else if(pEpollEventList[n].data.fd == sSocketServer.iSocketFd)    /*Server accept event*/
         {
@@ -155,8 +154,9 @@ temSocketStatus eSocketServerHandle(int *pEpollFd, int iEpollResult, struct epol
                 EpollEvevt.data.fd = psSocketClientNew->iSocketFd;
                 EpollEvevt.events = EPOLLIN | EPOLLET;  /*read ,Ede-Triggered, close*/
                 if(-1 == epoll_ctl (*pEpollFd, EPOLL_CTL_ADD, psSocketClientNew->iSocketFd, &EpollEvevt)){
-                    ERR_vPrintf(T_TRUE,"epoll_ctl failed, %s\n", strerror(errno));                                         
-                    return E_SOCKET_ERROR;
+                    ERR_vPrintf(T_TRUE,"epoll_ctl failed, %s\n", strerror(errno));   
+                    psSocketClientNew->iSocketFd = -1;
+                    continue;
                 }
                 DBG_vPrintf(DBG_SOCK, "Client Already Add Epoll_wait Fd\n");
                 u8NumConnClient++;
@@ -192,6 +192,7 @@ temSocketStatus eSocketServerHandle(int *pEpollFd, int iEpollResult, struct epol
                     }else{
                         INF_vPrintf(DBG_SOCK, "Recv Data is [%d]--- %s\n", sSocketClient[i].iSocketFd, sSocketClient[i].csClientData);
                         //TODO:
+                        eSocketSend(sSocketClient[i].iSocketFd, "I Recv Msg\n", sizeof("I Recv Msg\n"));
                     }
                 }
             }

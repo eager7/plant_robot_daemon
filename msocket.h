@@ -112,7 +112,7 @@ typedef struct _tSocektClient
 temSocketStatus eSocketInit(int iPort, char *paNetAddress);
 temSocketStatus eSocketFinished(tsSocketServer *psmSocket);
 temSocketStatus eSocketRecv(tsSocketServer *psmSocket, char *paRecvMsg, uint16 u16Length);
-temSocketStatus eSocketSend(tsSocketServer *psmSocket, char *paSendMsg, uint16 u16Length);
+temSocketStatus eSocketSend(int iSocketFd, char *paSendMsg, uint16 u16Length);
 
 #if defined __cplusplus
 }
