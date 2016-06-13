@@ -49,12 +49,12 @@ typedef struct
 /** Signal handler to receive THREAD_SIGNAL.
  *  This is just used to interrupt system calls such as recv() and sleep().
  */
-static void thread_signal_handler(int sig)
+static void vthread_signal_handler(int sig)
 {
     DBG_vPrintf(DBG_THREADS, "Signal %d received\n", sig);
 }
 
-teThreadStatus mThreadStart(tprThreadFunction prThreadFunction, tsThread *psThreadInfo, teThreadDetachState eDetachState)
+teThreadStatus eThreadStart(tprThreadFunction prThreadFunction, tsThread *psThreadInfo, teThreadDetachState eDetachState)
 {
     
     psThreadInfo->eState = E_THREAD_STOPPED;
@@ -68,7 +68,7 @@ teThreadStatus mThreadStart(tprThreadFunction prThreadFunction, tsThread *psThre
         * get the signal. But we can use pthread_signal to direct it at one.
         */
         struct sigaction sa;
-        sa.sa_handler = thread_signal_handler;
+        sa.sa_handler = vthread_signal_handler;
         sa.sa_flags = 0;
         sigemptyset(&sa.sa_mask);
 
@@ -102,7 +102,7 @@ teThreadStatus mThreadStart(tprThreadFunction prThreadFunction, tsThread *psThre
     return  E_THREAD_OK;
 }
 
-teThreadStatus mThreadStop(tsThread *psThreadInfo)
+teThreadStatus eThreadStop(tsThread *psThreadInfo)
 {
     DBG_vPrintf(DBG_THREADS, "Stopping Thread %p\n", psThreadInfo);
     
@@ -136,7 +136,7 @@ teThreadStatus mThreadStop(tsThread *psThreadInfo)
     return  E_THREAD_OK;
 }
 
-teThreadStatus mThreadFinish(tsThread *psThreadInfo)
+teThreadStatus eThreadFinish(tsThread *psThreadInfo)
 {
     psThreadInfo->eState = E_THREAD_STOPPED;
     
@@ -147,14 +147,14 @@ teThreadStatus mThreadFinish(tsThread *psThreadInfo)
     return E_THREAD_OK; /* Control won't get here */
 }
 
-teThreadStatus mThreadYield(void)
+teThreadStatus eThreadYield(void)
 {
     sched_yield();
     return E_THREAD_OK;
 }
 
 /************************** Lock Functionality *******************************/
-teLockStatus mLockCreate(pthread_mutex_t *psLock, teMutexType eMutexType)
+teLockStatus eLockCreate(pthread_mutex_t *psLock, teMutexType eMutexType)
 {
     pthread_mutexattr_t     attr;
     pthread_mutexattr_init(&attr);
@@ -185,7 +185,7 @@ teLockStatus mLockCreate(pthread_mutex_t *psLock, teMutexType eMutexType)
     return E_LOCK_OK;
 }
 
-teLockStatus mLockCreateRW(pthread_rwlock_t *rwlock, teRwLockType eRwLockType)
+teLockStatus eLockCreateRW(pthread_rwlock_t *rwlock, teRwLockType eRwLockType)
 {
     pthread_rwlockattr_t attr;
     pthread_rwlockattr_init(&attr);
@@ -210,21 +210,21 @@ teLockStatus mLockCreateRW(pthread_rwlock_t *rwlock, teRwLockType eRwLockType)
     return E_LOCK_OK;
 }
 
-teLockStatus mLockDestroy(pthread_mutex_t *psLock)
+teLockStatus eLockDestroy(pthread_mutex_t *psLock)
 {
     pthread_mutex_destroy(psLock);
     DBG_vPrintf(DBG_LOCKS, "Lock Destroy: %p\n", psLock);
     return E_LOCK_OK;
 }
 
-teLockStatus mLockDestroyRW(pthread_rwlock_t *rwlock)
+teLockStatus eLockDestroyRW(pthread_rwlock_t *rwlock)
 {
     pthread_rwlock_destroy(rwlock);
     DBG_vPrintf(DBG_LOCKS, "rwLock Destroy: %p\n", rwlock);
     return E_LOCK_OK;
 }
 
-teLockStatus mLockLock(pthread_mutex_t *psLock)
+teLockStatus eLockLock(pthread_mutex_t *psLock)
 {
     DBG_vPrintf(DBG_LOCKS, "Thread 0x%lx locking: %p\n", pthread_self(), psLock);
     if(0 == pthread_mutex_lock(psLock))
@@ -239,7 +239,7 @@ teLockStatus mLockLock(pthread_mutex_t *psLock)
     }
 }
 
-teLockStatus mLockLockRead(pthread_rwlock_t *rwlock)
+teLockStatus eLockLockRead(pthread_rwlock_t *rwlock)
 {
     DBG_vPrintf(DBG_LOCKS, "Thread 0x%lx locking: %p\n", pthread_self(), rwlock);
     if(0 == pthread_rwlock_rdlock(rwlock))
@@ -254,7 +254,7 @@ teLockStatus mLockLockRead(pthread_rwlock_t *rwlock)
     }
 }
 
-teLockStatus mLockLockWrite(pthread_rwlock_t *rwlock)
+teLockStatus eLockLockWrite(pthread_rwlock_t *rwlock)
 {
     DBG_vPrintf(DBG_LOCKS, "Thread 0x%lx locking: %p\n", pthread_self(), rwlock);
     if(0 == pthread_rwlock_wrlock(rwlock))
@@ -269,7 +269,7 @@ teLockStatus mLockLockWrite(pthread_rwlock_t *rwlock)
     }
 }
 
-teLockStatus mLockLockTimed(pthread_mutex_t *psLock, uint32 u32WaitTimeout)
+teLockStatus eLockLockTimed(pthread_mutex_t *psLock, uint32 u32WaitTimeout)
 {    
     struct timeval sNow;
     struct timespec sTimeout;
@@ -299,7 +299,7 @@ teLockStatus mLockLockTimed(pthread_mutex_t *psLock, uint32 u32WaitTimeout)
     }
 }
 
-teLockStatus mLockTryLock(pthread_mutex_t *psLock)
+teLockStatus eLockTryLock(pthread_mutex_t *psLock)
 {
     DBG_vPrintf(DBG_LOCKS, "Thread 0x%lx try locking: %p\n", pthread_self(), psLock);
     if (pthread_mutex_trylock(psLock) != 0)
@@ -327,7 +327,7 @@ teLockStatus mLockUnlock(pthread_mutex_t *psLock)
     }
 }
 
-teLockStatus mLockUnlockRW(pthread_rwlock_t *rwlock)
+teLockStatus eLockUnlockRW(pthread_rwlock_t *rwlock)
 {    
     DBG_vPrintf(DBG_LOCKS, "Thread 0x%lx unlocking: %p\n", pthread_self(), rwlock);
     if(0 == pthread_rwlock_unlock(rwlock))
@@ -343,7 +343,7 @@ teLockStatus mLockUnlockRW(pthread_rwlock_t *rwlock)
 }
 
 /*******************************************************************************
-** 函 数 名  : mQueueCreate
+** 函 数 名  : eQueueCreate
 ** 功能描述  : 创建消息队列
 ** 输入参数  : tsQueue *psQueue  
              : uint32 u32Length  
@@ -352,7 +352,7 @@ teLockStatus mLockUnlockRW(pthread_rwlock_t *rwlock)
 ** 日    期  : 2016年1月4日
 ** 作    者  : PCT
 *******************************************************************************/
-teQueueStatus mQueueCreate(tsQueue *psQueue, uint32 u32Length)
+teQueueStatus eQueueCreate(tsQueue *psQueue, uint32 u32Length)
 {
     psQueue->apvBuffer = malloc(sizeof(void *) * u32Length);
     if (!psQueue->apvBuffer){
@@ -372,7 +372,7 @@ teQueueStatus mQueueCreate(tsQueue *psQueue, uint32 u32Length)
 }
 
 /*******************************************************************************
-** 函 数 名  : mQueueDestroy
+** 函 数 名  : eQueueDestroy
 ** 功能描述  : 销毁创建的消息队列
 ** 输入参数  : tsQueue *psQueue  
 ** 返 回 值  : 
@@ -380,7 +380,7 @@ teQueueStatus mQueueCreate(tsQueue *psQueue, uint32 u32Length)
 ** 日    期  : 2016年1月4日
 ** 作    者  : PCT
 *******************************************************************************/
-teQueueStatus mQueueDestroy(tsQueue *psQueue)
+teQueueStatus eQueueDestroy(tsQueue *psQueue)
 {
     if (NULL == psQueue->apvBuffer){
         return E_QUEUE_ERROR_FAILED;
@@ -395,7 +395,7 @@ teQueueStatus mQueueDestroy(tsQueue *psQueue)
 }
 
 /*******************************************************************************
-** 函 数 名  : mQueueEnqueue
+** 函 数 名  : eQueueEnqueue
 ** 功能描述  : 入队函数，如果空间已满，需要等待空间释放，然后广播队列中有数
                据可用，入队的内存需要手动申请，然后在出队地方释放
 ** 输入参数  : tsQueue *psQueue  
@@ -405,7 +405,7 @@ teQueueStatus mQueueDestroy(tsQueue *psQueue)
 ** 日    期  : 2016年1月4日
 ** 作    者  : PCT
 *******************************************************************************/
-teQueueStatus mQueueEnqueue(tsQueue *psQueue, void *pvData)
+teQueueStatus eQueueEnqueue(tsQueue *psQueue, void *pvData)
 {
     pthread_mutex_lock(&psQueue->mutex);
     while (((psQueue->u32Rear + 1)%psQueue->u32Length) == psQueue->u32Front)
@@ -420,7 +420,7 @@ teQueueStatus mQueueEnqueue(tsQueue *psQueue, void *pvData)
 }
 
 /*******************************************************************************
-** 函 数 名  : mQueueDequeue
+** 函 数 名  : eQueueDequeue
 ** 功能描述  : 出队函数，需要等待队列中有数据可用，读出数据后需要广播队列中
                空间可用，调用出队函数的地方需要释放入队分配的内存
 ** 输入参数  : tsQueue *psQueue  
@@ -430,7 +430,7 @@ teQueueStatus mQueueEnqueue(tsQueue *psQueue, void *pvData)
 ** 日    期  : 2016年1月4日
 ** 作    者  : PCT
 *******************************************************************************/
-teQueueStatus mQueueDequeue(tsQueue *psQueue, void **ppvData)
+teQueueStatus eQueueDequeue(tsQueue *psQueue, void **ppvData)
 {
     pthread_mutex_lock(&psQueue->mutex);
     while (psQueue->u32Front == psQueue->u32Rear)
@@ -445,7 +445,7 @@ teQueueStatus mQueueDequeue(tsQueue *psQueue, void **ppvData)
 }
 
 /*******************************************************************************
-** 函 数 名  : mQueueDequeueTimed
+** 函 数 名  : eQueueDequeueTimed
 ** 功能描述  : 具有延时等待功能的出队函数，可以设置等待时间然后返回，避免阻
                塞
 ** 输入参数  : tsQueue *psQueue       
@@ -456,7 +456,7 @@ teQueueStatus mQueueDequeue(tsQueue *psQueue, void **ppvData)
 ** 日    期  : 2016年1月4日
 ** 作    者  : PCT
 *******************************************************************************/
-teQueueStatus mQueueDequeueTimed(tsQueue *psQueue, uint32 u32WaitTimeMil, void **ppvData)
+teQueueStatus eQueueDequeueTimed(tsQueue *psQueue, uint32 u32WaitTimeMil, void **ppvData)
 {
     pthread_mutex_lock(&psQueue->mutex);
     while (psQueue->u32Front == psQueue->u32Rear)

@@ -1,10 +1,10 @@
 ###########################################################################
 #
-# MODULE:             IOTC - Makefile
+# MODULE:             Plant Robot Daemon - Makefile
 #
 # REVISION:           $Revision: 1.0 $
 #
-# DATED:              $Date: 2015-10-28 11:16:28 +0000 $
+# DATED:              $Date: 2016-06-08 11:16:28 +0000 $
 #
 # AUTHOR:             PCT
 #
@@ -13,7 +13,7 @@
 # Copyright panchangtao@gmail.com B.V. 2015. All rights reserved
 #
 ###########################################################################
-TARGET := thread_test
+TARGET := plant_robot_daemon
 
 SRC_NAME := .
 SRC_DIR := $(SRC_NAME)

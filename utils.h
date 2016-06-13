@@ -45,11 +45,14 @@ extern "C"{
 #define UI_CYAN(x)      "\e[36;1m"x"\e[0m"
 #define UI_WHITE(x)     "\e[37;1m"x"\e[0m"
 
-#define DBG_vPrintf(a,b,ARGS...)  do {  if (a) {printf(UI_BLUE	("[IOT_%d]") b, __LINE__, ## ARGS);}} while(0)
+#define DBG_vPrintf(a,b,ARGS...)  do {  if (a) {printf(UI_BLUE  ("[IOT_%d]") b, __LINE__, ## ARGS);}} while(0)
 #define INF_vPrintf(a,b,ARGS...)  do {  if (a) {printf(UI_YELLOW("[IOT_%d]") b, __LINE__, ## ARGS);}} while(0)
-#define NOT_vPrintf(a,b,ARGS...)  do {  if (a) {printf(UI_GREEN	("[IOT_%d]") b, __LINE__, ## ARGS);}} while(0)
+#define NOT_vPrintf(a,b,ARGS...)  do {  if (a) {printf(UI_GREEN ("[IOT_%d]") b, __LINE__, ## ARGS);}} while(0)
 #define WAR_vPrintf(a,b,ARGS...)  do {  if (a) {printf(UI_PURPLE("[IOT_%d]") b, __LINE__, ## ARGS);}} while(0)
-#define ERR_vPrintf(a,b,ARGS...)  do {  if (a) {printf(UI_RED	("[IOT_%d]") b, __LINE__, ## ARGS);}} while(0)
+#define ERR_vPrintf(a,b,ARGS...)  do {  if (a) {printf(UI_RED   ("[IOT_%d]") b, __LINE__, ## ARGS);}} while(0)
+
+#define CheckError(value,comp,ret) do{if(value != comp){ERR_vPrintf(T_TRUE, "err:%s\n", strerror(errno));return ret;}}while(0)
+#define CheckNull(x,y) do{if(x == NULL){return y;}}while(0)
 
 #define MIBF 256
 #define MDBF 1024 

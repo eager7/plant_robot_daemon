@@ -19,6 +19,7 @@
 #ifndef __MTHREADS_H__
 #define __MTHREADS_H__
 
+#include <pthread.h>
 #include "utils.h"
 
 typedef enum
@@ -73,25 +74,27 @@ typedef enum
     E_NUM_PTHREAD_PROCESS_PRIVATE,
 }teRwLockType;
 
+typedef volatile enum
+{
+    E_THREAD_STOPPED,
+    E_THREAD_RUNNING,
+    E_THREAD_STOPPING,
+} teState;
+
 typedef struct
 {
-    volatile enum
-    {
-        E_THREAD_STOPPED,
-        E_THREAD_RUNNING,
-        E_THREAD_STOPPING,
-    } eState;
     teThreadDetachState eThreadDetachState;
+    teState eState;
     pthread_t pThread_Id;
     void *pvThreadData;
 } tsThread;
 
 typedef void *(*tprThreadFunction)(void *psThreadInfoVoid);
 
-teThreadStatus mThreadStart(tprThreadFunction prThreadFunction, tsThread *psThreadInfo, teThreadDetachState eDetachState);
-teThreadStatus mThreadStop(tsThread *psThreadInfo);
-teThreadStatus mThreadFinish(tsThread *psThreadInfo);
-teThreadStatus mThreadYield(void);
+teThreadStatus eThreadStart(tprThreadFunction prThreadFunction, tsThread *psThreadInfo, teThreadDetachState eDetachState);
+teThreadStatus eThreadStop(tsThread *psThreadInfo);
+teThreadStatus eThreadFinish(tsThread *psThreadInfo);
+teThreadStatus eThreadYield(void);
 
 typedef enum
 {
@@ -101,18 +104,18 @@ typedef enum
     E_LOCK_ERROR_NO_MEM,
 } teLockStatus;
 
-teLockStatus mLockCreate(pthread_mutex_t *psLock, teMutexType eMutexType);
-teLockStatus mLockDestroy(pthread_mutex_t *psLock);
-teLockStatus mLockLock(pthread_mutex_t *psLock);
-teLockStatus mMLockLockTimed(pthread_mutex_t *psLock, uint32 u32WaitTimeout);
-teLockStatus mLockTryLock(pthread_mutex_t *psLock);
-teLockStatus mLockUnlock(pthread_mutex_t *psLock);
+teLockStatus eLockCreate(pthread_mutex_t *psLock, teMutexType eMutexType);
+teLockStatus eLockDestroy(pthread_mutex_t *psLock);
+teLockStatus eLockLock(pthread_mutex_t *psLock);
+teLockStatus eMLockLockTimed(pthread_mutex_t *psLock, uint32 u32WaitTimeout);
+teLockStatus eLockTryLock(pthread_mutex_t *psLock);
+teLockStatus eLockUnlock(pthread_mutex_t *psLock);
 
-teLockStatus mLockCreateRW(pthread_rwlock_t *rwlock, teRwLockType eRwLockType);
-teLockStatus mLockDestroyRW(pthread_rwlock_t *rwlock);
-teLockStatus mLockLockRead(pthread_rwlock_t *rwlock);
-teLockStatus mLockLockWrite(pthread_rwlock_t *rwlock);
-teLockStatus mLockUnlockRW(pthread_rwlock_t *rwlock);
+teLockStatus eLockCreateRW(pthread_rwlock_t *rwlock, teRwLockType eRwLockType);
+teLockStatus eLockDestroyRW(pthread_rwlock_t *rwlock);
+teLockStatus eLockLockRead(pthread_rwlock_t *rwlock);
+teLockStatus eLockLockWrite(pthread_rwlock_t *rwlock);
+teLockStatus eLockUnlockRW(pthread_rwlock_t *rwlock);
 
 typedef enum
 {
@@ -134,11 +137,11 @@ typedef struct
     pthread_cond_t cond_data_available;
 } tsQueue;
 
-teQueueStatus mQueueCreate(tsQueue *psQueue, uint32 u32Length); 
-teQueueStatus mQueueDestroy(tsQueue *psQueue);
-teQueueStatus mQueueEnqueue(tsQueue *psQueue, void *pvData);
-teQueueStatus mQueueDequeue(tsQueue *psQueue, void **ppvData);
-teQueueStatus mQueueDequeueTimed(tsQueue *psQueue, uint32 u32WaitTimeMil, void **ppvData);
+teQueueStatus eQueueCreate(tsQueue *psQueue, uint32 u32Length); 
+teQueueStatus eQueueDestroy(tsQueue *psQueue);
+teQueueStatus eQueueEnqueue(tsQueue *psQueue, void *pvData);
+teQueueStatus eQueueDequeue(tsQueue *psQueue, void **ppvData);
+teQueueStatus eQueueDequeueTimed(tsQueue *psQueue, uint32 u32WaitTimeMil, void **ppvData);
 
 
 /** Atomically add a 32 bit value to another.
