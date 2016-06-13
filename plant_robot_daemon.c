@@ -16,7 +16,7 @@
 #include <sys/resource.h>
 
 #include "utils.h"
-#include "msocket.h"
+#include "mthread.h"
 /****************************************************************************/
 /***        Macro Definitions                                             ***/
 /****************************************************************************/
@@ -24,8 +24,8 @@
 /****************************************************************************/
 /***        Local Function Prototypes                                     ***/
 /****************************************************************************/
-static void print_net_usage_exit(char *argv[]);
-static void iotc_net_init(int argc, char *argv[]);
+static void print_usage_exit(char *argv[]);
+static void plant_robot_daemon_init(int argc, char *argv[]);
 static void daemonize_init(const char *cmd);
 
 
@@ -34,7 +34,7 @@ static void daemonize_init(const char *cmd);
 /***        Exported Variables                                            ***/
 /****************************************************************************/
 char const *Version = "v0.1";
-uint8 verbosity = 0;
+uint8 verbosity = 1;
 
 
 /****************************************************************************/
@@ -42,9 +42,9 @@ uint8 verbosity = 0;
 /****************************************************************************/
 int main(int argc, char *argv[])
 {
-    printf("this is iotc_net daemon\n");
+    printf("this is plant robot daemon\n");
 
-    iotc_net_init(argc, argv);
+    plant_robot_daemon_init(argc, argv);
 
     while(1)
     {
@@ -61,7 +61,7 @@ static void vQuitSignalHandler (int sig)
     return;
 }
 
-static void iotc_net_init(int argc, char *argv[])
+static void plant_robot_daemon_init(int argc, char *argv[])
 {
     signed char opt = 0;
     int option_index = 0;
@@ -79,7 +79,7 @@ static void iotc_net_init(int argc, char *argv[])
          switch (opt) 
         {
             case 'h':
-                print_net_usage_exit(argv);
+                print_usage_exit(argv);
             break;
             case 'f':
                 daemonize = 0;
@@ -88,7 +88,7 @@ static void iotc_net_init(int argc, char *argv[])
                 verbosity = atoi(optarg);
             break;
             default:
-            print_net_usage_exit(argv);  
+            print_usage_exit(argv);  
         }
     }
     if(daemonize)
@@ -169,10 +169,10 @@ static void daemonize_init(const char *cmd)
     }
 }
 
-static void print_net_usage_exit(char *argv[])
+static void print_usage_exit(char *argv[])
 {
     fprintf(stderr, "\t******************************************************\n");
-    fprintf(stderr, "\t*         iotc net   Version: %s            *\n", Version);
+    fprintf(stderr, "\t*         plant robot daemon version: %s    *\n", Version);
     fprintf(stderr, "\t******************************************************\n");
     fprintf(stderr, "\t************************Release***********************\n");
     
