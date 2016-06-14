@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- * MODULE:             msocket.c
+ * MODULE:             msocket_server.c
  *
  * COMPONENT:          socket interface
  *
@@ -19,12 +19,12 @@
 /****************************************************************************/
 /***        Include files                                                 ***/
 /****************************************************************************/
-#include "msocket.h"
+#include "msocket_server.h"
 #include <sys/epoll.h> 
 /****************************************************************************/
 /***        Macro Definitions                                             ***/
 /****************************************************************************/
-#define DBG_SOCK 1
+#define DBG_SOCK_SER 1
 
 /****************************************************************************/
 /***        Type Definitions                                              ***/
@@ -47,9 +47,9 @@ static tsSocketClient sSocketClient[SOCKET_CLIENT_NUM];
 /****************************************************************************/
 /***        Exported Functions                                            ***/
 /****************************************************************************/
-temSocketStatus eSocketInit(int iPort, char *paNetAddress)
+temSocketStatus eSocketServerInit(int iPort, char *paNetAddress)
 {
-    DBG_vPrintf(DBG_SOCK, "mSocketInit\n");
+    DBG_vPrintf(DBG_SOCK_SER, "mSocketInit\n");
     signal(SIGPIPE, SIG_IGN);//ingnore signal interference
 
     memset(&sSocketServer, 0, sizeof(sSocketServer));
@@ -77,25 +77,25 @@ temSocketStatus eSocketInit(int iPort, char *paNetAddress)
     CheckError(bind(sSocketServer.iSocketFd, (struct sockaddr*)&sSocketServer.sAddr_Ipv4, sizeof(struct sockaddr_in)), 0, E_SOCKET_INIT);
     CheckError(listen(sSocketServer.iSocketFd, SOCKET_LISTEN_NUM), 0, E_SOCKET_INIT);
 
-    DBG_vPrintf(DBG_SOCK, "pthread_create\n");
+    DBG_vPrintf(DBG_SOCK_SER, "pthread_create\n");
     sSocketServer.sThread.pvThreadData = &sSocketServer;
     CheckError(eThreadStart(pvSocketServerThread, &sSocketServer.sThread, E_THREAD_JOINABLE), E_THREAD_OK, E_SOCKET_INIT);
     
     return E_SOCKET_OK;
 }
 
-temSocketStatus eSocketFinished(tsSocketServer *psmSocket)
+temSocketStatus eSocketServerFinished(tsSocketServer *psmSocket)
 {
-    DBG_vPrintf(DBG_SOCK, "mSocketFinished\n");
+    DBG_vPrintf(DBG_SOCK_SER, "mSocketFinished\n");
     CheckNull(psmSocket, E_SOCKET_CLOSE);
     
     CheckError(close(psmSocket->iSocketFd), 0, E_SOCKET_CLOSE);
     return E_SOCKET_OK;
 }
 
-temSocketStatus eSocketSend(int iSocketFd, char *paSendMsg, uint16 u16Length)
+temSocketStatus eSocketServerSend(int iSocketFd, char *paSendMsg, uint16 u16Length)
 {
-    DBG_vPrintf(DBG_SOCK, "mSocketSend\n");
+    DBG_vPrintf(DBG_SOCK_SER, "mSocketSend\n");
     CheckNull(paSendMsg, E_SOCKET_SEND);
     
     if( -1 == send(iSocketFd, paSendMsg, u16Length, 0)){
@@ -105,9 +105,9 @@ temSocketStatus eSocketSend(int iSocketFd, char *paSendMsg, uint16 u16Length)
     return E_SOCKET_OK;
 }
 
-temSocketStatus eSocketRecv(tsSocketServer *psmSocket, char *paRecvMsg, uint16 u16Length)
+temSocketStatus eSocketServerRecv(tsSocketServer *psmSocket, char *paRecvMsg, uint16 u16Length)
 {
-    DBG_vPrintf(DBG_SOCK, "mSocketSend\n");
+    DBG_vPrintf(DBG_SOCK_SER, "mSocketSend\n");
     CheckNull(psmSocket, E_SOCKET_RECV);
     CheckNull(paRecvMsg, E_SOCKET_RECV);
     int ret = recv(psmSocket->iSocketFd, paRecvMsg, u16Length, 0);
@@ -136,7 +136,7 @@ temSocketStatus eSocketServerHandle(int *pEpollFd, int iEpollResult, struct epol
         }
         else if(pEpollEventList[n].data.fd == sSocketServer.iSocketFd)    /*Server accept event*/
         {
-            DBG_vPrintf(DBG_SOCK, "sSocketServer.iSocketFd Changed\n");
+            DBG_vPrintf(DBG_SOCK_SER, "sSocketServer.iSocketFd Changed\n");
             tsSocketClient *psSocketClientNew = NULL;
             for(i = 0; i < SOCKET_CLIENT_NUM; i ++){
                 if(-1 == sSocketClient[i].iSocketFd){
@@ -150,7 +150,7 @@ temSocketStatus eSocketServerHandle(int *pEpollFd, int iEpollResult, struct epol
             if(-1 == psSocketClientNew->iSocketFd){
                 ERR_vPrintf(T_TRUE, "socket accept error %s\n", strerror(errno));
             }else{
-                INF_vPrintf(DBG_SOCK, "A client[%d] Already Connected, The Number of Client is [%d]\n", psSocketClientNew->iSocketFd, i);
+                INF_vPrintf(DBG_SOCK_SER, "A client[%d] Already Connected, The Number of Client is [%d]\n", psSocketClientNew->iSocketFd, i);
                 EpollEvevt.data.fd = psSocketClientNew->iSocketFd;
                 EpollEvevt.events = EPOLLIN | EPOLLET;  /*read ,Ede-Triggered, close*/
                 if(-1 == epoll_ctl (*pEpollFd, EPOLL_CTL_ADD, psSocketClientNew->iSocketFd, &EpollEvevt)){
@@ -158,7 +158,7 @@ temSocketStatus eSocketServerHandle(int *pEpollFd, int iEpollResult, struct epol
                     psSocketClientNew->iSocketFd = -1;
                     continue;
                 }
-                DBG_vPrintf(DBG_SOCK, "Client Already Add Epoll_wait Fd\n");
+                DBG_vPrintf(DBG_SOCK_SER, "Client Already Add Epoll_wait Fd\n");
                 u8NumConnClient++;
                 if(u8NumConnClient >= SOCKET_CLIENT_NUM){
                     EpollEvevt.data.fd = sSocketServer.iSocketFd;
@@ -170,7 +170,7 @@ temSocketStatus eSocketServerHandle(int *pEpollFd, int iEpollResult, struct epol
             for(i = 0; i < SOCKET_CLIENT_NUM; i ++){
                 if(pEpollEventList[n].data.fd == sSocketClient[i].iSocketFd){
                     /***********----------------RecvMessage-----------------************/                                
-                    NOT_vPrintf(DBG_SOCK, "Socket Client[%d] Begin Recv Data...\n", sSocketClient[i].iSocketFd);
+                    NOT_vPrintf(DBG_SOCK_SER, "Socket Client[%d] Begin Recv Data...\n", sSocketClient[i].iSocketFd);
                     sSocketClient[i].iSocketDataLen = recv(sSocketClient[i].iSocketFd, 
                         sSocketClient[i].csClientData, sizeof(sSocketClient[i].csClientData), 0);
                     if(-1 == sSocketClient[i].iSocketDataLen){
@@ -190,9 +190,9 @@ temSocketStatus eSocketServerHandle(int *pEpollFd, int iEpollResult, struct epol
                             epoll_ctl(*pEpollFd, EPOLL_CTL_ADD, sSocketServer.iSocketFd, &EpollEvevt);
                         }
                     }else{
-                        INF_vPrintf(DBG_SOCK, "Recv Data is [%d]--- %s\n", sSocketClient[i].iSocketFd, sSocketClient[i].csClientData);
+                        INF_vPrintf(DBG_SOCK_SER, "Recv Data is [%d]--- %s\n", sSocketClient[i].iSocketFd, sSocketClient[i].csClientData);
                         //TODO:
-                        eSocketSend(sSocketClient[i].iSocketFd, "I Recv Msg\n", sizeof("I Recv Msg\n"));
+                        eSocketServerSend(sSocketClient[i].iSocketFd, "I Recv Msg\n", sizeof("I Recv Msg\n"));
                     }
                 }
             }
@@ -238,7 +238,7 @@ static void *pvSocketServerThread(void *psThreadInfoVoid)
                 ERR_vPrintf(T_TRUE,"epoll_wait E_EPOLL_TIMEOUT\n");  
             break;
             default:{
-                DBG_vPrintf(DBG_SOCK, "Epoll_wait Find %d Changed\n", iEpollResult);
+                DBG_vPrintf(DBG_SOCK_SER, "Epoll_wait Find %d Changed\n", iEpollResult);
                 //TODO:
                 eSocketServerHandle(&iEpollFd, iEpollResult, EpollEventList);
             }

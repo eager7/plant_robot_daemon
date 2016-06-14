@@ -2,7 +2,7 @@
  *
  * MODULE:             socket lib interface
  *
- * COMPONENT:          msocket.h
+ * COMPONENT:          msocket_client.h
  *
  * REVISION:           $Revision: 52723 $
  *
@@ -16,8 +16,8 @@
  *
  ***************************************************************************/
 
-#ifndef __MSOCKET_H__
-#define __MSOCKET_H__
+#ifndef __MSOCKET_CLIENT_H__
+#define __MSOCKET_CLIENT_H__
 
 #if defined __cplusplus
 extern "C"{
@@ -32,63 +32,17 @@ extern "C"{
 #include <arpa/inet.h>
 #include <signal.h>
 #include "mthread.h"
+#include "msocket_server.h"
 #include "list.h"
 
 /****************************************************************************/
 /***        Type Definitions                                              ***/
 /****************************************************************************/
-typedef enum
-{
-    E_SOCKET_OK,
-    E_SOCKET_NULL,
-    E_SOCKET_INIT,
-    E_SOCKET_SEND,
-    E_SOCKET_RECV,
-    E_SOCKET_CLOSE,
-    E_SOCKET_ERROR,
-    E_SOCKET_TIMEOUT,
-    E_SOCKET_DISCONNECT,
-    E_SOCKET_NO_MEM,
-} temSocketStatus;
 
-typedef enum
-{
-    E_EPOLL_OK = 1,
-    E_EPOLL_TIMEOUT = 0,
-    E_EPOLL_ERROR = -1,
-}teSelectResult;
-
-typedef enum
-{
-    E_WAIT_OK = 0,
-    E_WAIT_TIMEOUT = ETIMEDOUT,
-}teCondWaitResult;
-
-typedef struct
-{
-    int iSocketFd;
-    pthread_t pthSocketServer;
-    tsThread sThread;
-    struct sockaddr_in sAddr_Ipv4;
-    pthread_mutex_t mutex;
-} tsSocketServer;
-
-typedef struct _tSocektClient
-{
-    int                             iSocketFd;
-    struct sockaddr_in              addrclient;
-    int                             iSocketDataLen;
-    char                            csClientData[MXBF];
-}tsSocketClient;
-
-//typedef void *(*tprThreadFunction)(void *psThreadInfoVoid);
 
 /****************************************************************************/
 /***        Macro Definitions                                             ***/
 /****************************************************************************/
-#define SOCKET_LISTEN_NUM 5
-#define EPOLL_EVENT_NUM 10
-#define SOCKET_CLIENT_NUM 10
 /****************************************************************************/
 /***        Local Function Prototypes                                     ***/
 /****************************************************************************/
@@ -109,10 +63,10 @@ typedef struct _tSocektClient
 /***        Locate   Functions                                            ***/
 /****************************************************************************/
 
-temSocketStatus eSocketInit(int iPort, char *paNetAddress);
-temSocketStatus eSocketFinished(tsSocketServer *psmSocket);
-temSocketStatus eSocketRecv(tsSocketServer *psmSocket, char *paRecvMsg, uint16 u16Length);
-temSocketStatus eSocketSend(int iSocketFd, char *paSendMsg, uint16 u16Length);
+temSocketStatus eSocketClientInit(int iPort, char *paNetAddress);
+temSocketStatus eSocketClientFinished(tsSocketServer *psmSocket);
+temSocketStatus eSocketClientRecv(tsSocketServer *psmSocket, char *paRecvMsg, uint16 u16Length);
+temSocketStatus eSocketClientSend(int iSocketFd, char *paSendMsg, uint16 u16Length);
 
 #if defined __cplusplus
 }

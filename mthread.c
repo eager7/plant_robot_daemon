@@ -1,8 +1,8 @@
 /****************************************************************************
  *
- * MODULE:             thread lib interface
+ * MODULE:             msocket_server lib interface
  *
- * COMPONENT:          mthreads.h
+ * COMPONENT:          msocket_server.h
  *
  * REVISION:           $Revision: 52723 $
  *
@@ -28,7 +28,7 @@
 #include <errno.h>
 #include <sys/time.h>
 
-#include <mthread.h>
+#include "mthread.h"
 
 #define DBG_THREADS 1
 #define DBG_LOCKS   1

@@ -17,7 +17,7 @@
 
 #include "utils.h"
 #include "mthread.h"
-#include "msocket.h"
+#include "msocket_server.h"
 /****************************************************************************/
 /***        Macro Definitions                                             ***/
 /****************************************************************************/
@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 
     plant_robot_daemon_init(argc, argv);
 
-    if(E_SOCKET_OK != eSocketInit(7878, NULL)){
+    if(E_SOCKET_OK != eSocketServerInit(7878, NULL)){
         ERR_vPrintf(T_TRUE, "System Init Failed!\n");
         exit(1);
     }
